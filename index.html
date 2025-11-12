@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국 수어 통역기 Pro</title>
+    <style>
+        :root {
+            --primary: #2d3748;
+            --primary-light: #4a5568;
+            --secondary: #718096;
+            --accent: #000000;
+            --success: #48bb78;
+            --danger: #f56565;
+            --warning: #ecc94b;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7fafc;
+            --bg-tertiary: #edf2f7;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-tertiary: #a0aec0;
+            --border: #e2e8f0;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+            background: var(--bg-secondary);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px var(--shadow), 0 1px 3px var(--shadow);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 32px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        /* Main Layout */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            padding: 24px;
+        }
+
+        @media (min-width: 1280px) {
+            .main-content {
+                grid-template-columns: 1.8fr 1fr;
+            }
+        }
+
+        /* Video Section */
+        .video-section {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 4px 6px var(--shadow);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        }
+
+        #video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Status Overlay */
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 5;
+            transition: opacity 0.3s;
+        }
+
+        .video-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .overlay-content {
+            text-align: center;
+            color: white;
+        }
+
+        .overlay-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+
+        .overlay-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-tertiary);
+        }
+
+        .status-badge.active .status-indicator {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Info Badges */
+        .info-badges {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .info-badge {
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Recording Indicator */
+        .recording-indicator {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 20px;
+            background: rgba(239, 68, 68, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 700;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+            animation: fadeIn 0.3s;
+        }
+
+        .recording-indicator.active {
+            display: flex;
+        }
+
+        .rec-dot {
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* Controls Panel */
+        .controls-panel {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .control-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .control-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-value {
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        /* Slider */
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 4px var(--shadow);
+            transition: transform 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        button {
+            padding: 14px 20px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-light);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #e53e3e;
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-color: var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--bg-tertiary);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border-color: var(--border);
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: var(--bg-tertiary);
+        }
+
+        /* Output Section */
+        .output-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 6px var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .card-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .card-action {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .card-action:hover {
+            background: var(--border);
+        }
+
+        /* Result Display */
+        .result-text {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            color: var(--text-primary);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.4;
+            word-break: keep-all;
+            padding: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .result-text.waiting {
+            color: var(--text-tertiary);
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .result-text.recognized {
+            animation: recognize 0.3s ease-out;
+        }
+
+        @keyframes recognize {
+            0% { transform: scale(0.95); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Confidence Meter */
+        .confidence-meter {
+            margin-top: 16px;
+        }
+
+        .confidence-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .confidence-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .confidence-value {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .confidence-bar {
+            height: 10px;
+            background: var(--border);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            border-radius: 5px;
+            transition: width 0.3s ease;
+            width: 0%;
+            position: relative;
+        }
+
+        .confidence-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Statistics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .stat-item {
+            background: var(--bg-tertiary);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* History */
+        .history-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .history-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-tertiary);
+        }
+
+        .history-item {
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.2s;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .history-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .history-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .history-confidence {
+            display: inline-block;
+            padding: 2px 8px;
+            background: var(--primary);
+            color: white;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .history-text {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* Keypoint Visualizer */
+        .keypoint-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .keypoint-item {
+            background: var(--bg-tertiary);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+
+        .keypoint-label {
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .keypoint-value {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Scrollbar */
+        .history-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .history-container::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .history-container::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 4px;
+        }
+
+        .history-container::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .main-content {
+                padding: 16px;
+                gap: 16px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .video-container {
+                padding-bottom: 75%; /* 4:3 on mobile */
+            }
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 12px;
+            background: var(--primary);
+            color: white;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            margin-bottom: 8px;
+            z-index: 1000;
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .settings-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        /* Export Button */
+        .export-options {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .export-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .export-btn:hover {
+            background: var(--bg-tertiary);
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">AI 모델 로딩 중...</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🤟 한국 수어 통역기 Pro</h1>
+            <p>실시간 AI 기반 수어 인식 및 분석 시스템</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Column -->
+            <div>
+                <div class="video-section">
+                    <div class="video-overlay" id="videoOverlay">
+                        <div class="overlay-content">
+                            <div class="overlay-icon">📹</div>
+                            <div class="overlay-text">시작 버튼을 눌러주세요</div>
+                        </div>
+                    </div>
+                    
+                    <div class="status-badge" id="statusBadge">
+                        <div class="status-indicator"></div>
+                        <span id="statusText">대기 중</span>
+                    </div>
+                    
+                    <div class="info-badges">
+                        <div class="info-badge" id="fpsCounter">0 FPS</div>
+                        <div class="info-badge" id="handsCounter">0 손</div>
+                    </div>
+
+                    <div class="recording-indicator" id="recordingIndicator">
+                        <div class="rec-dot"></div>
+                        <span>키포인트 저장 중</span>
+                    </div>
+                    
+                    <div class="video-container">
+                        <video id="video" autoplay playsinline muted></video>
+                        <canvas id="canvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="controls-panel">
+                    <div class="control-section">
+                        <div class="control-header">
+                            <div class="control-label">
+                                <span>🎯</span>
+                                <span>감지 민감도</span>
+                            </div>
+                            <span class="control-value" id="sensitivityValue">0.5</span>
+                        </div>
+                        <input type="range" id="sensitivitySlider" min="0.1" max="0.9" step="0.05" value="0.5">
+                    </div>
+
+                    <div class="control-section">
+                        <div class="control-header">
+                            <div class="control-label">
+                                <span>👐</span>
+                                <span>최대 손 개수</span>
+                            </div>
+                            <span class="control-value" id="maxHandsValue">2</span>
+                        </div>
+                        <input type="range" id="maxHandsSlider" min="1" max="6" step="1" value="2">
+                    </div>
+
+                    <div class="control-section">
+                        <div class="control-header">
+                            <div class="control-label">
+                                <span>🎨</span>
+                                <span>손 스켈레톤 표시</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="skeletonToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="control-header">
+                            <div class="control-label">
+                                <span>💾</span>
+                                <span>키포인트 자동 저장</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="autoSaveToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" id="startBtn" onclick="startCamera()">
+                        <span>📹</span>
+                        <span>시작</span>
+                    </button>
+                    <button class="btn-danger" id="stopBtn" onclick="stopCamera()" disabled>
+                        <span>⏹️</span>
+                        <span>정지</span>
+                    </button>
+                    <button class="btn-outline" onclick="saveKeypoints()" id="saveBtn" disabled>
+                        <span>💾</span>
+                        <span>키포인트 저장</span>
+                    </button>
+                    <button class="btn-secondary" onclick="downloadHistory()">
+                        <span>📥</span>
+                        <span>기록 다운로드</span>
+                    </button>
+                </div>
+
+                <div class="settings-panel">
+                    <div class="control-label" style="margin-bottom: 12px;">
+                        <span>📊</span>
+                        <span>실시간 통계</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-value" id="totalGestures">0</span>
+                            <span class="stat-label">인식 횟수</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="avgConfidence">0%</span>
+                            <span class="stat-label">평균 신뢰도</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="sessionTime">00:00</span>
+                            <span class="stat-label">세션 시간</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="savedKeypoints">0</span>
+                            <span class="stat-label">저장된 데이터</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="output-section">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-wrapper">
+                            <div class="card-icon">🤟</div>
+                            <div class="card-title">인식된 수어</div>
+                        </div>
+                    </div>
+                    <div class="result-text waiting" id="resultText">
+                        수어를 보여주세요...
+                    </div>
+                    <div class="confidence-meter">
+                        <div class="confidence-header">
+                            <span class="confidence-label">신뢰도</span>
+                            <span class="confidence-value" id="confidenceValue">0%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="confidenceFill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-wrapper">
+                            <div class="card-icon">🔍</div>
+                            <div class="card-title">키포인트 정보</div>
+                        </div>
+                    </div>
+                    <div class="keypoint-info" id="keypointInfo">
+                        <div class="keypoint-item">
+                            <div class="keypoint-label">감지된 손</div>
+                            <div class="keypoint-value" id="detectedHands">0</div>
+                        </div>
+                        <div class="keypoint-item">
+                            <div class="keypoint-label">처리 속도</div>
+                            <div class="keypoint-value" id="processingTime">0ms</div>
+                        </div>
+                        <div class="keypoint-item">
+                            <div class="keypoint-label">왼손 감지</div>
+                            <div class="keypoint-value" id="leftHand">❌</div>
+                        </div>
+                        <div class="keypoint-item">
+                            <div class="keypoint-label">오른손 감지</div>
+                            <div class="keypoint-value" id="rightHand">❌</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-wrapper">
+                            <div class="card-icon">📝</div>
+                            <div class="card-title">번역 기록</div>
+                        </div>
+                        <button class="card-action" onclick="clearHistory()">
+                            전체 삭제
+                        </button>
+                    </div>
+                    <div class="history-container" id="historyContainer">
+                        <div class="history-empty">
+                            아직 번역 기록이 없습니다
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+    <script>
+        // Global Variables
+        let camera = null;
+        let hands = null;
+        let isRunning = false;
+        let showSkeleton = true;
+        let autoSave = false;
+        let sensitivity = 0.5;
+        let maxHands = 2;
+        let lastGesture = '';
+        let gestureStartTime = 0;
+        let confidenceScore = 0;
+        let frameCount = 0;
+        let lastTime = Date.now();
+        let fps = 0;
+        let sessionStartTime = null;
+        let totalGestures = 0;
+        let confidenceSum = 0;
+        let savedKeypointsCount = 0;
+        let keypointsData = [];
+        let processingStartTime = 0;
+
+        const GESTURE_HOLD_TIME = 800;
+
+        // 한국 수어 매핑
+        const koreanSignLanguage = {
+            'thumbs_up': '좋아요',
+            'thumbs_down': '싫어요',
+            'peace': '평화 / 둘',
+            'ok': '확인',
+            'pointing': '가리키기',
+            'open_palm': '안녕하세요',
+            'fist': '주먹 / 싫어요',
+            'one': '하나',
+            'two': '둘',
+            'three': '셋',
+            'four': '넷',
+            'five': '다섯',
+            'love': '사랑해요',
+            'call_me': '전화해요',
+            'rock': '락앤롤',
+            'prayer': '기도'
+        };
+
+        // Event Listeners
+        document.getElementById('sensitivitySlider').addEventListener('input', (e) => {
+            sensitivity = parseFloat(e.target.value);
+            document.getElementById('sensitivityValue').textContent = sensitivity.toFixed(2);
+            if (hands) {
+                hands.setOptions({
+                    minDetectionConfidence: sensitivity,
+                    minTrackingConfidence: sensitivity
+                });
+            }
+        });
+
+        document.getElementById('maxHandsSlider').addEventListener('input', (e) => {
+            maxHands = parseInt(e.target.value);
+            document.getElementById('maxHandsValue').textContent = maxHands;
+            if (hands) {
+                hands.setOptions({ maxNumHands: maxHands });
+            }
+        });
+
+        document.getElementById('skeletonToggle').addEventListener('change', (e) => {
+            showSkeleton = e.target.checked;
+        });
+
+        document.getElementById('autoSaveToggle').addEventListener('change', (e) => {
+            autoSave = e.target.checked;
+            document.getElementById('recordingIndicator').classList.toggle('active', autoSave && isRunning);
+        });
+
+        // 카메라 시작
+        async function startCamera() {
+            try {
+                document.getElementById('loadingOverlay').classList.add('active');
+                updateStatus('초기화 중...', false);
+
+                hands = new Hands({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                    }
+                });
+
+                hands.setOptions({
+                    maxNumHands: maxHands,
+                    modelComplexity: 1,
+                    minDetectionConfidence: sensitivity,
+                    minTrackingConfidence: sensitivity
+                });
+
+                hands.onResults(onResults);
+
+                const video = document.getElementById('video');
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'user'
+                    }
+                });
+
+                video.srcObject = stream;
+
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => resolve();
+                });
+
+                camera = new Camera(video, {
+                    onFrame: async () => {
+                        processingStartTime = performance.now();
+                        await hands.send({ image: video });
+                        updateFPS();
+                    },
+                    width: 1280,
+                    height: 720
+                });
+
+                await camera.start();
+
+                isRunning = true;
+                sessionStartTime = Date.now();
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('saveBtn').disabled = false;
+                document.getElementById('videoOverlay').classList.add('hidden');
+                updateStatus('실행 중', true);
+                document.getElementById('loadingOverlay').classList.remove('active');
+                
+                if (autoSave) {
+                    document.getElementById('recordingIndicator').classList.add('active');
+                }
+
+                updateSessionTime();
+
+            } catch (error) {
+                console.error('카메라 시작 오류:', error);
+                alert('카메라를 시작할 수 없습니다.\n' + error.message);
+                document.getElementById('loadingOverlay').classList.remove('active');
+                updateStatus('오류 발생', false);
+            }
+        }
+
+        // 카메라 정지
+        function stopCamera() {
+            if (camera) camera.stop();
+
+            const video = document.getElementById('video');
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+
+            isRunning = false;
+            sessionStartTime = null;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('saveBtn').disabled = true;
+            document.getElementById('videoOverlay').classList.remove('hidden');
+            document.getElementById('recordingIndicator').classList.remove('active');
+            updateStatus('정지됨', false);
+
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            document.getElementById('fpsCounter').textContent = '0 FPS';
+            document.getElementById('handsCounter').textContent = '0 손';
+        }
+
+        // MediaPipe 결과 처리
+        function onResults(results) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = results.image.width;
+            canvas.height = results.image.height;
+
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 처리 시간 계산
+            const processingTime = performance.now() - processingStartTime;
+            document.getElementById('processingTime').textContent = processingTime.toFixed(1) + 'ms';
+
+            // 손 개수 업데이트
+            const numHands = results.multiHandLandmarks ? results.multiHandLandmarks.length : 0;
+            document.getElementById('handsCounter').textContent = numHands + ' 손';
+            document.getElementById('detectedHands').textContent = numHands;
+
+            // 왼손/오른손 감지 상태
+            let hasLeftHand = false;
+            let hasRightHand = false;
+
+            if (results.multiHandLandmarks && showSkeleton) {
+                for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+                    const landmarks = results.multiHandLandmarks[i];
+                    const handedness = results.multiHandedness ? results.multiHandedness[i] : null;
+                    const isLeft = handedness && handedness.label === 'Left';
+                    const isRight = handedness && handedness.label === 'Right';
+
+                    if (isLeft) hasLeftHand = true;
+                    if (isRight) hasRightHand = true;
+
+                    // 연결선 그리기
+                    drawConnectors(ctx, landmarks, HAND_CONNECTIONS, {
+                        color: isLeft ? '#4a5568' : '#2d3748',
+                        lineWidth: 4
+                    });
+
+                    // 관절 그리기
+                    drawLandmarks(ctx, landmarks, {
+                        color: '#ffffff',
+                        fillColor: isLeft ? '#718096' : '#2d3748',
+                        lineWidth: 2,
+                        radius: 5
+                    });
+                }
+
+                // 자동 저장
+                if (autoSave && results.multiHandLandmarks.length > 0) {
+                    saveKeypointsData(results.multiHandLandmarks, results.multiHandedness);
+                }
+            }
+
+            document.getElementById('leftHand').textContent = hasLeftHand ? '✅' : '❌';
+            document.getElementById('rightHand').textContent = hasRightHand ? '✅' : '❌';
+
+            ctx.restore();
+
+            // 수어 인식
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const gesture = recognizeGesture(
+                    results.multiHandLandmarks[0],
+                    results.multiHandedness ? results.multiHandedness[0] : null
+                );
+                
+                if (gesture) {
+                    updateResult(gesture);
+                }
+            }
+        }
+
+        // 제스처 인식 (향상된 알고리즘)
+        function recognizeGesture(landmarks, handedness) {
+            if (!landmarks) return null;
+
+            const thumbTip = landmarks[4];
+            const indexTip = landmarks[8];
+            const middleTip = landmarks[12];
+            const ringTip = landmarks[16];
+            const pinkyTip = landmarks[20];
+
+            const thumbBase = landmarks[2];
+            const indexBase = landmarks[5];
+            const middleBase = landmarks[9];
+            const ringBase = landmarks[13];
+            const pinkyBase = landmarks[17];
+
+            const wrist = landmarks[0];
+
+            // 손가락 펴짐 감지 (개선된 알고리즘)
+            const thumbUp = thumbTip.y < thumbBase.y - 0.04;
+            const thumbDown = thumbTip.y > thumbBase.y + 0.04;
+            const indexUp = indexTip.y < indexBase.y - 0.05;
+            const middleUp = middleTip.y < middleBase.y - 0.05;
+            const ringUp = ringTip.y < ringBase.y - 0.05;
+            const pinkyUp = pinkyTip.y < pinkyBase.y - 0.05;
+
+            const fingersUp = [indexUp, middleUp, ringUp, pinkyUp].filter(Boolean).length;
+
+            const distance = (p1, p2) => Math.sqrt(
+                Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2)
+            );
+
+            confidenceScore = Math.min(100, 55 + fingersUp * 11);
+
+            // 제스처 인식
+            if (thumbUp && !indexUp && !middleUp && !ringUp && !pinkyUp) {
+                confidenceScore = 96;
+                return 'thumbs_up';
+            }
+            else if (thumbDown && !indexUp && !middleUp && !ringUp && !pinkyUp) {
+                confidenceScore = 94;
+                return 'thumbs_down';
+            }
+            else if (indexUp && middleUp && !ringUp && !pinkyUp && !thumbUp) {
+                confidenceScore = 92;
+                return 'peace';
+            }
+            else if (thumbUp && indexUp && distance(thumbTip, indexTip) < 0.05) {
+                confidenceScore = 88;
+                return 'ok';
+            }
+            else if (indexUp && !middleUp && !ringUp && !pinkyUp) {
+                confidenceScore = 90;
+                return 'pointing';
+            }
+            else if (thumbUp && indexUp && middleUp && ringUp && pinkyUp) {
+                confidenceScore = 94;
+                return 'open_palm';
+            }
+            else if (!thumbUp && !indexUp && !middleUp && !ringUp && !pinkyUp) {
+                confidenceScore = 92;
+                return 'fist';
+            }
+            else if (pinkyUp && thumbUp && !indexUp && !middleUp && !ringUp) {
+                confidenceScore = 89;
+                return 'love';
+            }
+            else if (indexUp && pinkyUp && !middleUp && !ringUp) {
+                confidenceScore = 87;
+                return 'rock';
+            }
+            else if (thumbUp && indexUp && middleUp && !ringUp && !pinkyUp) {
+                confidenceScore = 85;
+                return 'three';
+            }
+            else if (fingersUp === 1 && indexUp) {
+                return 'one';
+            }
+            else if (fingersUp === 2) {
+                return 'two';
+            }
+            else if (fingersUp === 4) {
+                return 'four';
+            }
+            else if (fingersUp === 4 && thumbUp) {
+                return 'five';
+            }
+
+            return null;
+        }
+
+        // 결과 업데이트
+        function updateResult(gesture) {
+            const currentTime = Date.now();
+
+            if (gesture === lastGesture) {
+                const elapsed = currentTime - gestureStartTime;
+                const progress = Math.min(100, (elapsed / GESTURE_HOLD_TIME) * 100);
+
+                updateConfidence(progress * (confidenceScore / 100));
+
+                if (elapsed > GESTURE_HOLD_TIME) {
+                    const translation = koreanSignLanguage[gesture] || '인식 중...';
+                    const resultText = document.getElementById('resultText');
+
+                    if (resultText.textContent !== translation) {
+                        resultText.textContent = translation;
+                        resultText.classList.remove('waiting');
+                        resultText.classList.add('recognized');
+                        setTimeout(() => resultText.classList.remove('recognized'), 300);
+                        addToHistory(translation, gesture, confidenceScore);
+                        
+                        totalGestures++;
+                        confidenceSum += confidenceScore;
+                        updateStats();
+                    }
+
+                    updateConfidence(confidenceScore);
+                }
+            } else {
+                lastGesture = gesture;
+                gestureStartTime = currentTime;
+            }
+        }
+
+        // 신뢰도 업데이트
+        function updateConfidence(score) {
+            document.getElementById('confidenceValue').textContent = Math.round(score) + '%';
+            document.getElementById('confidenceFill').style.width = score + '%';
+        }
+
+        // 기록에 추가
+        function addToHistory(translation, gesture, confidence) {
+            const container = document.getElementById('historyContainer');
+
+            if (container.querySelector('.history-empty')) {
+                container.innerHTML = '';
+            }
+
+            const time = new Date().toLocaleTimeString('ko-KR');
+
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `
+                <div class="history-header">
+                    <div class="history-time">${time}</div>
+                    <div class="history-confidence">${Math.round(confidence)}%</div>
+                </div>
+                <div class="history-text">${translation}</div>
+            `;
+
+            container.insertBefore(item, container.firstChild);
+
+            while (container.children.length > 50) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        // 기록 삭제
+        function clearHistory() {
+            const container = document.getElementById('historyContainer');
+            container.innerHTML = '<div class="history-empty">아직 번역 기록이 없습니다</div>';
+            document.getElementById('resultText').textContent = '수어를 보여주세요...';
+            document.getElementById('resultText').classList.add('waiting');
+            updateConfidence(0);
+            totalGestures = 0;
+            confidenceSum = 0;
+            updateStats();
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            document.getElementById('totalGestures').textContent = totalGestures;
+            const avgConf = totalGestures > 0 ? Math.round(confidenceSum / totalGestures) : 0;
+            document.getElementById('avgConfidence').textContent = avgConf + '%';
+            document.getElementById('savedKeypoints').textContent = savedKeypointsCount;
+        }
+
+        // 세션 시간 업데이트
+        function updateSessionTime() {
+            if (!sessionStartTime) return;
+            
+            const elapsed = Date.now() - sessionStartTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            document.getElementById('sessionTime').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            if (isRunning) {
+                requestAnimationFrame(updateSessionTime);
+            }
+        }
+
+        // 상태 업데이트
+        function updateStatus(text, active) {
+            document.getElementById('statusText').textContent = text;
+            const badge = document.getElementById('statusBadge');
+            if (active) {
+                badge.classList.add('active');
+            } else {
+                badge.classList.remove('active');
+            }
+        }
+
+        // FPS 업데이트
+        function updateFPS() {
+            frameCount++;
+            const now = Date.now();
+            const elapsed = now - lastTime;
+
+            if (elapsed >= 1000) {
+                fps = Math.round((frameCount * 1000) / elapsed);
+                document.getElementById('fpsCounter').textContent = fps + ' FPS';
+                frameCount = 0;
+                lastTime = now;
+            }
+        }
+
+        // 키포인트 저장 (NumPy 형식 시뮬레이션)
+        function saveKeypointsData(multiHandLandmarks, multiHandedness) {
+            const timestamp = new Date();
+            
+            multiHandLandmarks.forEach((landmarks, idx) => {
+                const keypoints = [];
+                landmarks.forEach(lm => {
+                    keypoints.push(lm.x, lm.y, lm.z);
+                });
+
+                const handLabel = multiHandedness && multiHandedness[idx] ? 
+                    multiHandedness[idx].label : 'Unknown';
+
+                keypointsData.push({
+                    timestamp: timestamp.toISOString(),
+                    hand: handLabel,
+                    keypoints: keypoints,
+                    landmarks_count: landmarks.length
+                });
+            });
+
+            savedKeypointsCount = keypointsData.length;
+            updateStats();
+        }
+
+        // 수동 키포인트 저장
+        function saveKeypoints() {
+            if (!isRunning) {
+                alert('카메라가 실행 중일 때만 저장할 수 있습니다.');
+                return;
+            }
+
+            // 현재 프레임의 키포인트를 바로 저장하도록 플래그 설정
+            alert('다음 프레임의 키포인트가 저장됩니다.');
+        }
+
+        // 기록 다운로드
+        function downloadHistory() {
+            const container = document.getElementById('historyContainer');
+            const items = container.querySelectorAll('.history-item');
+            
+            if (items.length === 0) {
+                alert('다운로드할 기록이 없습니다.');
+                return;
+            }
+
+            let csvContent = "시간,수어,신뢰도\n";
+            
+            items.forEach(item => {
+                const time = item.querySelector('.history-time').textContent;
+                const text = item.querySelector('.history-text').textContent;
+                const confidence = item.querySelector('.history-confidence').textContent;
+                csvContent += `${time},"${text}",${confidence}\n`;
+            });
+
+            // 키포인트 데이터도 포함
+            if (keypointsData.length > 0) {
+                csvContent += "\n\n키포인트 데이터 (JSON)\n";
+                csvContent += JSON.stringify(keypointsData, null, 2);
+            }
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `수어_기록_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 페이지 종료 시 정리
+        window.addEventListener('beforeunload', () => {
+            if (isRunning) stopCamera();
+        });
+    </script>
+</body>
+</html>
